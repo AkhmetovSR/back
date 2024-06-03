@@ -3,20 +3,11 @@ const {query} = require("express");
 const db = mySql.createPool({
     host: "localhost",
     user: "root",
-    password: "database",
-    database: "wedding"
+    password: "qwerty",
+    database: "telegram"
 });
 
 
-    const sqlQuery = "insert into person (login, password, role) values(?, ?, ?)";
-    const data = ["adw", "qwerty", "ROLE_USER"];
-    try {
-        db.query(sqlQuery, data);
-        console.log(sqlQuery, data)
-        console.log("added")
-    } catch (err) {
-        console.log(err)
-    }
 
 
 // const sqlQuery = "insert into person (login, password) values(?, ?)";
