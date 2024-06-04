@@ -6,6 +6,12 @@ class UserController{
        if(result)
            res.send(result)
     }
+
+    static async getUser(req, res){
+        let result = await userModel.getUser(req, res);
+        if(result)
+            res.send(result)
+    }
 }
 
 module.exports=UserController;

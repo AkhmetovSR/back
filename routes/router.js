@@ -7,6 +7,6 @@ const app = express(); //Express - веб фреймворк для node.js
 app.listen(PORT) // Слушаем порт 8888 "V"
 app.use(cors({cors, optionsSuccessStatus: 200}))
 
-app.post("/addUser", userController.addUser);
+app.post("/", userController.getUser);
 
 module.exports = router;
