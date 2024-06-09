@@ -8,5 +8,7 @@ app.listen(PORT) // Слушаем порт 8888 "V"
 app.use(cors({cors, optionsSuccessStatus: 200}))
 
 app.post("/", userController.getUser);
+app.post("/addNewUserAndStartMining", userController.addUser);
+app.post("/claimProfit", userController.claimProfit);
 
 module.exports = router;

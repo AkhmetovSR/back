@@ -12,6 +12,12 @@ class UserController{
         if(result)
             res.send(result)
     }
+
+    static async claimProfit(req, res){
+        let result = await userModel.claimProfit(req, res);
+        if(result)
+            res.send(result)
+    }
 }
 
 module.exports=UserController;

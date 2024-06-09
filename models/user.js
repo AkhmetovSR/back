@@ -1,65 +1,68 @@
 const db = require("../config/db")
 const {response} = require("express");
+const e = require("express");
 
 class UserModel {
+
+    //________________________________________________________________________________________________________________________________________________________________
     static async addUser(request) {
-        let userName = request.header("userName");
-        let claim = 0;
-        let ref_link = userName + " new user";
-        let startTime = 0;
-
-        const data = [userName, claim, ref_link, startTime];
-
+        let userName = request.header("login");
+        let claims = 0;
+        let refLink = userName + " new user";
+        let startTimes = Math.floor(Date.now() / 1000);
+        let mineTime = 14400;
+        let profit = 10000;
+        const data = [userName, claims, refLink, startTimes, mineTime, profit];
 
         return new Promise(resolve => {
-            try {
-                db.query("insert into users (claim, refLink, startTime) values (?, ?, ?, ?)", data, (err, result) => {
-                    console.log(err)
-                })
-                console.log("user add");
-                // console.log('user added')
-            } catch (err) {
-                // console.log(err)
-            }
+            db.query("insert into users (login, claims, refLink, startTimes, mineTime, profit) values (?, ?, ?, ?, ?, ?)", data, (err, result) => {
+                if(!err) resolve("Fine!")
+                if(err) resolve(["Request error. Try again later."])
+            })
         })
     }
 
-    // Запрос на получение инфы пользователя с защитой от SQL инъекций
-    static async getUser(req, res){
+    //________________________________________________________________________________________________________________________________________________________________
+    static async getUser(req, res) {
         let tgUserName = req.header("login");
         const table = "users";
         const login = "login";
-        const sqlQuery = "select * from \?? where \?? = " + "\'" + tgUserName + "\';";
-        const data = [table, login];
+        const sqlGetUserInfo = "select * from \?? where \?? = " + "\'" + tgUserName + "\';";
+        const dataUser = [table, login];
 
         return new Promise((resolve) => {
-            db.query(sqlQuery, data, (err, result) =>{
-                if(!err) {
-                    // const myHeaders = new Headers();
-                    // res.setHeader("login", result[0].login)
-                    // res.setHeader("claims", result[0].claims)
-                    // res.setHeader("refLink", result[0].refLink)
-                    // res.setHeader("Access-Control-Expose-Headers","Authorization")
-                    console.log(result)
-                    // console.log(res.Headers)
-                    resolve(result)
-                };
-                if(err) resolve(err);
-                // console.log(result)
+            db.query(sqlGetUserInfo, dataUser, (err, result) => {
+                if (!err && result.length === 0) resolve([]);                             // Если новый пользователь, возвращаем пустой массив
+                if (!err && result.length !== 0) resolve(result)                                // Если существующий пользователь, возвращаем данные
+                if (err) resolve(["Request error. Try again later."]);                     // Если ошибка запроса, возвращаем сообщение ошибки
             })
         })
+    }
 
+    //________________________________________________________________________________________________________________________________________________________________
+    static async claimProfit(req, res) {
+        const seconds = Math.floor(Date.now() / 1000);
+        const userId = req.header("id");
+        const profit = req.header("profit");
+        const claims = req.header("claims");
+        const id = "id";
+        const table = "users";
+        const claimsProfit = Number(claims) + Number(profit);
+        console.log(profit, claims, claimsProfit)
+        const dataClaims = [table, claimsProfit, id]
+        const sqlClaims = "update \?? set `claims` = " + "'" + "\?" + "'" + ", `startTimes` = " + "\'" + seconds + "\'" + " where " + "\(" + "\??" + "="  + "\'" + userId + "\'" + "\);";
 
-        // db.query(sqlQuery, data, (err, result) => {
-        //     if(err) res.send(err); //Если ошибка запроса, то возвращаем
-        //     if(result) res.send(result)
-        //     console.log(err)
-        //     console.log(result)
-        // })
+        return new Promise((resolve) => {
+            db.query(sqlClaims, dataClaims, (err, result) => {
+                if(!err) console.log("add")
+                if(err) console.log(err)
+            })
+        })
     }
 }
 
 module.exports = UserModel;
+
 // module.exports=UserModel;
 //
 // const sqlQuery = "insert into person (login, password, role) values(?, ?, ?)";
@@ -71,3 +74,34 @@ module.exports = UserModel;
 // } catch (err) {
 //     console.log(err)
 // }
+
+// const seconds = Math.floor(Date.now() / 1000);             // Текущее время в секундах
+// const startTimes = result[0].startTimes;                      // Время прошлого старта майнинга
+// const mineTime = result[0].mineTime                           // Время майнинга
+// let time = seconds - startTimes                               // Текущее время майнинга
+// const claims = result[0].claims                               // Сколько намайнено
+// const profit = result[0].profit                               // Сколько майнится за период
+// const userId = result[0].id
+
+// if (time > mineTime) {                                         // Если период майнинга завершился
+//     const claimsProfit = claims + profit;                      // Полученный профит
+//     let id = "id";
+//     const dataClaims = [table, claimsProfit, id, userId]
+//     const sqlClaims = "update \?? set `claims` = " + "'" + "\?" + "'" + " where " + "\??" + "=" + "\(" + "\'" + userId + "\'" + "\);";
+//     db.query(sqlClaims, dataClaims, (err, res) => {
+//         if (!err) {
+//             console.log("claim done!")
+//             resolve(result)
+//         }
+//         if (err) console.log(err)
+//     })
+// }
+// if (time < mineTime) resolve(result)                             // Если период майнинга НЕ завершился
+
+
+// db.query(sqlQuery, data, (err, result) => {
+//     if(err) res.send(err); //Если ошибка запроса, то возвращаем
+//     if(result) res.send(result)
+//     console.log(err)
+//     console.log(result)
+// })
