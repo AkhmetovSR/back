@@ -8,7 +8,7 @@ class UserModel {
     static async addUser(request) {
         let userName = request.header("login");
         let claims = 0;
-        let refLink = userName + " new user";
+        let refLink = "https://t.me/React_WebApp_Bot/RWTG?startapp=" + userName;
         let startTimes = Math.floor(Date.now() / 1000);
         let mineTime = 14400;
         let profit = 10000;
@@ -16,8 +16,14 @@ class UserModel {
 
         return new Promise(resolve => {
             db.query("insert into users (login, claims, refLink, startTimes, mineTime, profit) values (?, ?, ?, ?, ?, ?)", data, (err, result) => {
-                if(!err) resolve("Fine!")
-                if(err) resolve(["Request error. Try again later."])
+                if(!err) {
+                    console.log("add")
+                    resolve("Fine!")
+                }
+                if(err) {
+                    console.log(err)
+                    resolve(["Request error. Try again later."])
+                }
             })
         })
     }
