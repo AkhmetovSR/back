@@ -1,5 +1,5 @@
 const db = require("../config/db")
-const {response} = require("express");
+const {response, query} = require("express");
 const e = require("express");
 
 class UserModel {
@@ -18,11 +18,11 @@ class UserModel {
             db.query("insert into users (login, claims, refLink, startTimes, mineTime, profit) values (?, ?, ?, ?, ?, ?)", data, (err, result) => {
                 if(!err) {
                     console.log("add")
-                    resolve("Fine!")
+                    resolve(result)
                 }
                 if(err) {
                     console.log(err)
-                    resolve(["Request error. Try again later."])
+                    resolve(["1Request error. Try again later."])
                 }
             })
         })
@@ -40,7 +40,7 @@ class UserModel {
             db.query(sqlGetUserInfo, dataUser, (err, result) => {
                 if (!err && result.length === 0) resolve([]);                             // Если новый пользователь, возвращаем пустой массив
                 if (!err && result.length !== 0) resolve(result)                                // Если существующий пользователь, возвращаем данные
-                if (err) resolve(["Request error. Try again later."]);                     // Если ошибка запроса, возвращаем сообщение ошибки
+                if (err) resolve(["2Request error. Try again later."]);                     // Если ошибка запроса, возвращаем сообщение ошибки
             })
         })
     }
@@ -60,7 +60,11 @@ class UserModel {
 
         return new Promise((resolve) => {
             db.query(sqlClaims, dataClaims, (err, result) => {
-                if(!err) console.log("add")
+
+                if(!err) {
+                    console.log("profit+")
+                    resolve(result)
+                }
                 if(err) console.log(err)
             })
         })
