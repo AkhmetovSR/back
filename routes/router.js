@@ -9,6 +9,9 @@ app.use(cors({cors, optionsSuccessStatus: 200}))
 
 app.post("/", userController.getUser);
 app.post("/addNewUserAndStartMining", userController.addUser);
+// app.post("/getFrens", userController.getFrens);
 app.post("/claimProfit", userController.claimProfit);
+app.post("/getEarns", userController.getEarns);
+app.post("/EarnComplete", userController.EarnComplete);
 
 module.exports = router;

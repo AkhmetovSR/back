@@ -4,48 +4,114 @@ const e = require("express");
 
 class UserModel {
 
-    //________________________________________________________________________________________________________________________________________________________________
+    //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     static async addUser(request) {
         let userName = request.header("login");
+        let referal = request.header("referal");
         let claims = 0;
         let refLink = "https://t.me/React_WebApp_Bot/RWTG?startapp=" + userName;
         let startTimes = Math.floor(Date.now() / 1000);
         let mineTime = 14400;
         let profit = 10000;
-        const data = [userName, claims, refLink, startTimes, mineTime, profit];
+        const addUser = [userName, claims, refLink, startTimes, mineTime, profit, false];
+        const addFrens = [userName, referal];
 
         return new Promise(resolve => {
-            db.query("insert into users (login, claims, refLink, startTimes, mineTime, profit) values (?, ?, ?, ?, ?, ?)", data, (err, result) => {
-                if(!err) {
+            db.query("insert into users (login, claims, refLink, startTimes, mineTime, profit, user_blocked) values (?, ?, ?, ?, ?, ?)", addUser, (err, result) => {
+                if (!err) {
                     console.log("add")
                     resolve(result)
                 }
-                if(err) {
+                if (err) {
                     console.log(err)
                     resolve(["1Request error. Try again later."])
                 }
             })
+            // Если реферал есть, то делаем еще один запрос
+            if (referal) {
+                db.query("insert into frens (loginId, loginFren) values (?, ?)", addFrens, (err, result) => {
+                    if (!err) {
+                        console.log("Frens add")
+                        resolve(result)
+                    }
+                    if (err) {
+                        console.log(err)
+                        resolve(["Frens add error"])
+                    }
+                })
+            }
         })
     }
 
-    //________________________________________________________________________________________________________________________________________________________________
+    //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     static async getUser(req, res) {
-        let tgUserName = req.header("login");
-        const table = "users";
-        const login = "login";
-        const sqlGetUserInfo = "select * from \?? where \?? = " + "\'" + tgUserName + "\';";
-        const dataUser = [table, login];
+        let user_login = req.header("login");
+        const sql = "select u.*, f.frens, b.boosts, fec.earns " +
+            "from telegram.users as u " +
+            "left join " +
+            "(select f.user_login, group_concat(fren separator ', ') as frens " +
+            "from telegram.frens as f " +
+            "group by f.user_login having user_login = " + "\?" + ") as f " +
+            "on u.login = f.user_login " +
+            "left join " +
+            "(select fe.user_login, group_concat(fe.id separator ', ') as earns " +
+            "from " +
+            "(select ec.user_login, e.id " +
+            "from telegram.earncomplete as ec " +
+            "left join telegram.earns as e " +
+            "on ec.earn_id = e.id) as fe " +
+            "group by user_login having user_login = " + "\?" + ") as fec " +
+            "on u.login = fec.user_login " +
+            "left join " +
+            "(select b.user_login, group_concat(boost_id separator ', ') as boosts " +
+            "from telegram.boostHave as b " +
+            "group by user_login having user_login = " + "\?" + ") as b " +
+            "on u.login = b.user_login " +
+            "where u.login = " + "\?" + ";"
+
+        const data = [user_login, user_login, user_login, user_login];
+
 
         return new Promise((resolve) => {
-            db.query(sqlGetUserInfo, dataUser, (err, result) => {
-                if (!err && result.length === 0) resolve([]);                             // Если новый пользователь, возвращаем пустой массив
-                if (!err && result.length !== 0) resolve(result)                                // Если существующий пользователь, возвращаем данные
-                if (err) resolve(["2Request error. Try again later."]);                     // Если ошибка запроса, возвращаем сообщение ошибки
+            db.query(sql, data, (err, result) => {
+                if (!err && result.length === 0) {
+                    console.log(result)
+                    resolve(["asd"]);
+                }                              // Если новый пользователь, возвращаем пустой массив
+                if (!err && result.length !== 0) {                                               // Если существующий пользователь, возвращаем данные
+                    resolve(result)
+                    console.log(result)
+                }
+                if (err){
+                    console.log(err)
+                    resolve(["2Request error. Try again later."]);
+                }                    // Если ошибка запроса, возвращаем сообщение ошибки
             })
+
+
         })
     }
 
-    //________________________________________________________________________________________________________________________________________________________________
+    //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    // static async getFrens(req, res) {
+    //     let tgUserName = req.header("login");
+    //     const tableFrens = "frens";
+    //     const loginFren = "user_id";
+    //     const sqlGetFrens = "select * from \?? where \?? = " + "\'" + tgUserName + "\';";
+    //     const dataFrens = [tableFrens, loginFren];
+    //
+    //     return new Promise((resolve) => {
+    //         db.query(sqlGetFrens, dataFrens, (err, result) => {
+    //             if (!err) {
+    //                 resolve(result)
+    //                 console.log(result)
+    //             }
+    //             if (err) console.log(err)
+    //         })
+    //     })
+    // }
+
+    //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     static async claimProfit(req, res) {
         const seconds = Math.floor(Date.now() / 1000);
         const userId = req.header("id");
@@ -56,62 +122,21 @@ class UserModel {
         const claimsProfit = Number(claims) + Number(profit);
         console.log(profit, claims, claimsProfit)
         const dataClaims = [table, claimsProfit, id]
-        const sqlClaims = "update \?? set `claims` = " + "'" + "\?" + "'" + ", `startTimes` = " + "\'" + seconds + "\'" + " where " + "\(" + "\??" + "="  + "\'" + userId + "\'" + "\);";
+        const sqlClaims = "update \?? set `claims` = " + "'" + "\?" + "'" + ", `startTimes` = " + "\'" + seconds + "\'" + " where " + "\(" + "\??" + "=" + "\'" + userId + "\'" + "\);";
 
         return new Promise((resolve) => {
             db.query(sqlClaims, dataClaims, (err, result) => {
 
-                if(!err) {
+                if (!err) {
                     console.log("profit+")
                     resolve(result)
                 }
-                if(err) console.log(err)
+                if (err) console.log(err)
             })
         })
     }
+
+    //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 }
 
 module.exports = UserModel;
-
-// module.exports=UserModel;
-//
-// const sqlQuery = "insert into person (login, password, role) values(?, ?, ?)";
-// const data = ["adw", "qwerty", "ROLE_USER"];
-// try {
-//     db.query(sqlQuery, data);
-//     console.log(sqlQuery, data)
-//     console.log("added")
-// } catch (err) {
-//     console.log(err)
-// }
-
-// const seconds = Math.floor(Date.now() / 1000);             // Текущее время в секундах
-// const startTimes = result[0].startTimes;                      // Время прошлого старта майнинга
-// const mineTime = result[0].mineTime                           // Время майнинга
-// let time = seconds - startTimes                               // Текущее время майнинга
-// const claims = result[0].claims                               // Сколько намайнено
-// const profit = result[0].profit                               // Сколько майнится за период
-// const userId = result[0].id
-
-// if (time > mineTime) {                                         // Если период майнинга завершился
-//     const claimsProfit = claims + profit;                      // Полученный профит
-//     let id = "id";
-//     const dataClaims = [table, claimsProfit, id, userId]
-//     const sqlClaims = "update \?? set `claims` = " + "'" + "\?" + "'" + " where " + "\??" + "=" + "\(" + "\'" + userId + "\'" + "\);";
-//     db.query(sqlClaims, dataClaims, (err, res) => {
-//         if (!err) {
-//             console.log("claim done!")
-//             resolve(result)
-//         }
-//         if (err) console.log(err)
-//     })
-// }
-// if (time < mineTime) resolve(result)                             // Если период майнинга НЕ завершился
-
-
-// db.query(sqlQuery, data, (err, result) => {
-//     if(err) res.send(err); //Если ошибка запроса, то возвращаем
-//     if(result) res.send(result)
-//     console.log(err)
-//     console.log(result)
-// })
