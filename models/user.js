@@ -17,7 +17,7 @@ class UserModel {
         const addFrens = [userName, referal];
 
         return new Promise(resolve => {
-            db.query("insert into users (login, claims, refLink, startTimes, mineTime, profit, user_blocked) values (?, ?, ?, ?, ?, ?)", addUser, (err, result) => {
+            db.query("insert into users (login, claims, refLink, startTimes, mineTime, profit, user_blocked) values (?, ?, ?, ?, ?, ?, ?)", addUser, (err, result) => {
                 if (!err) {
                     console.log("add")
                     resolve(result)
@@ -76,7 +76,7 @@ class UserModel {
             db.query(sql, data, (err, result) => {
                 if (!err && result.length === 0) {
                     console.log(result)
-                    resolve(["asd"]);
+                    resolve([]);
                 }                              // Если новый пользователь, возвращаем пустой массив
                 if (!err && result.length !== 0) {                                               // Если существующий пользователь, возвращаем данные
                     resolve(result)

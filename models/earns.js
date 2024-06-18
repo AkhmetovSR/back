@@ -26,8 +26,12 @@ class earnsModel {
         return new Promise(resolve => {
             db.query(sqlEarnComplete, (err, result) => {
                 if(!err){
+                    console.log("Earncomplete add")
                     db.query(sqlUserEarnClaim, (err, result) => {
-                        if(!err) resolve("it's ok")
+                        if(!err) {
+                            console.log("Earn user claim ok")
+                            resolve("Earn user claim ok")
+                        }
                         if(err) {
                             console.log(err)
                         }
