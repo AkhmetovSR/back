@@ -2,9 +2,9 @@ const express = require('express');
 const router = require('express').Router();
 const userController = require("../UserController/UserController")
 const cors = require("cors");
-const PORT = 8888;
+const PORT = 4000;
 const app = express(); //Express - веб фреймворк для node.js
-app.listen(PORT) // Слушаем порт 8888 "V"
+app.listen(PORT) // Слушаем порт 4000 "V"
 app.use(cors({cors, optionsSuccessStatus: 200}))
 
 app.post("/", userController.getUser);

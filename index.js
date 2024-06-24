@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const PORT = 8888;
+const PORT = 4000;
 const app = express(); //Express - веб фреймворк для node.js
 const myDb = require('./config/db');
 const {query} = require("express");
