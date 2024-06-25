@@ -1,9 +1,9 @@
 const mySql = require("mysql2")
 const db = mySql.createPool({
-    host: "172.17.0.2",
+    host: "localhost:3303",
     user: "root",
     password: "Tgdatabase1!",
-    database: "tg"
+    database: "telegram"
 });
 
 module.exports=db;
